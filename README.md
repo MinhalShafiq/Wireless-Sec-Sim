@@ -21,7 +21,67 @@ make repro        # run every phase end-to-end on Munich    (~5–10 min on RTX 
 
 `make repro` runs the eight phases in order: load the 3D scene → simulate baseline + adversarial scenarios → sweep jammer/rogue positions → train classifier + coverage regressor → ingest into vector store → optimize deployment → smoke-test the dashboard → write a validation report.
 
-GPU is optional. The CPU LLVM backend works everywhere; for GPU set `SIM_VARIANT=cuda_ad_mono_polarized` (requires `libnvoptix.so.1`).
+GPU is optional. The CPU LLVM backend works everywhere; for GPU set `SIM_VARIANT=cuda_ad_mono_polarized` (requires `libnvoptix.so.1`). See **[GPU setup](#gpu-setup-optional)** below.
+
+### GPU setup (optional)
+
+Sionna RT's GPU backend uses NVIDIA **OptiX** (the ray-tracing API), which is *separate from CUDA* and ships with the desktop NVIDIA driver, not the CUDA `.run` installer. If you skip this section the CPU backend reproduces every result identically — just slower.
+
+**1. Check what's installed.** Run these on any Linux box:
+
+```bash
+# NVIDIA driver + CUDA version reported by the driver
+nvidia-smi | head -3 | tail -1
+
+# Kernel module version (the source of truth on consumer GPUs)
+cat /proc/driver/nvidia/version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
+
+# CUDA toolkit (optional — only needed if you compile CUDA code)
+nvcc --version 2>&1 | tail -2
+
+# OptiX runtime — the file Sionna RT actually needs
+ldconfig -p | grep libnvoptix
+ls -la /usr/lib/x86_64-linux-gnu/libnvoptix.so.* 2>&1
+
+# Mitsuba CUDA variant smoke test (must say "WORKING")
+.venv/bin/python -c "import mitsuba as mi; mi.set_variant('cuda_ad_mono_polarized'); \
+  mi.load_string('<scene version=\"3.0.0\"></scene>'); print('cuda variant: WORKING')"
+```
+
+**2. If `libnvoptix.so.1` is missing**, install Ubuntu's `libnvidia-gl-<DRV>` package matching your kernel-module version (e.g. `580.126.09` → `libnvidia-gl-580=580.126.09-…`):
+
+```bash
+sudo apt update
+sudo apt install libnvidia-gl-580=580.126.09-0ubuntu0.22.04.1
+sudo apt-mark hold libnvidia-gl-580      # prevent silent upgrades
+```
+
+**3. Version mismatch?** Consumer GPUs (RTX 20/30/40 series) do **not** support OptiX forward compatibility — the user-space libs *must* match the kernel module exactly. If `cuInit() failed: forward compatibility was attempted on non supported HW`, downgrade the user-space libs to match:
+
+```bash
+# Show installed user-space lib versions
+dpkg -l | grep -E "libnvidia-(common|compute|gl|kernel-common)|nvidia-utils" | awk '{print $2, $3}'
+
+# Pin them to your kernel-module version (replace 580.126.09 with yours)
+KERN=580.126.09-0ubuntu0.22.04.1
+sudo apt install \
+  libnvidia-common-580=$KERN \
+  libnvidia-compute-580=$KERN \
+  libnvidia-gl-580=$KERN \
+  nvidia-kernel-common-580=$KERN \
+  nvidia-utils-580=$KERN
+sudo apt-mark hold libnvidia-common-580 libnvidia-compute-580 libnvidia-gl-580 \
+                   nvidia-kernel-common-580 nvidia-utils-580
+```
+
+**4. Verify and use.** Re-run the smoke test from step 1 — it should print `cuda variant: WORKING` with no `libnvoptix.so.1 could not be loaded` warning. Then:
+
+```bash
+SIM_VARIANT=cuda_ad_mono_polarized python -m scripts.run_scenario configs/munich_baseline.yaml
+# meta.json will record:  "variant": "cuda_ad_mono_polarized"
+```
+
+Numerical results agree across CPU and GPU backends to within seed noise (≪ 0.01 dB on FSPL, ≈ 0.001 dB on Munich SINR).
 
 Other useful targets:
 
