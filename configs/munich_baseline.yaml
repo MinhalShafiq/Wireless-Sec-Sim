@@ -1,0 +1,51 @@
+name: munich_baseline
+scene: munich
+
+band:
+  name: n78
+  carrier_hz: 3.5e9
+  bandwidth_hz: 100e6
+  noise_figure_db: 7.0
+
+transmitters:
+  - name: bs0
+    position: { x: -50.0, y: -100.0, z: 25.0 }
+    power_dbm: 44.0
+    role: legitimate
+  - name: bs1
+    position: { x: 200.0, y: 100.0, z: 25.0 }
+    power_dbm: 44.0
+    role: legitimate
+  - name: bs2
+    position: { x: -300.0, y: 200.0, z: 25.0 }
+    power_dbm: 44.0
+    role: legitimate
+
+receivers:
+  - name: ue0
+    position: { x: 0.0, y: 0.0, z: 1.5 }
+    role: user
+  - name: ue1
+    position: { x: 100.0, y: 50.0, z: 1.5 }
+    role: user
+  - name: ue2
+    position: { x: -100.0, y: 100.0, z: 1.5 }
+    role: user
+  - name: ue3
+    position: { x: 250.0, y: -50.0, z: 1.5 }
+    role: user
+
+radio_map:
+  cell_size_m: 5.0
+  height_m: 1.5
+
+propagation:
+  max_depth: 3
+  samples_per_tx: 1000000
+  samples_per_src_paths: 500000
+  los: true
+  specular_reflection: true
+  diffuse_reflection: false
+  refraction: true
+  diffraction: false
+  seed: 42

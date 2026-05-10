@@ -1,0 +1,33 @@
+name: munich_bs_perf_sec
+base: configs/munich_baseline.yaml
+
+# Same bs0 search, but every trial faces the same fixed jammer near
+# scene centre. Maximise SINR while keeping the jammer-dominated UE
+# count low (heavy negative weight).
+search_space:
+  bs0:
+    position_x: { low: -300, high: 300 }
+    position_y: { low: -300, high: 300 }
+    position_z: { low: 15, high: 35 }
+    power_dbm:  { low: 35, high: 46 }
+
+threat:
+  type: jammer
+  position: { x: 30, y: 30, z: 8 }
+  power_dbm: 50
+
+objective:
+  direction: maximize
+  terms:
+    - { name: median_user_sinr_db, weight: 1.0 }
+    - { name: users_with_jammer_dominant, weight: -20.0 }
+
+n_trials: 25
+optimizer: tpe
+seed: 42
+
+warm_start:
+  enabled: false
+  embedder: data/embedders/v1
+  store: data/vector_store
+  k: 4

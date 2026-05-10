@@ -1,0 +1,12 @@
+name: rogue_position
+base: configs/munich_baseline.yaml
+template: rogue
+
+# 9-point grid of rogue gNB positions × 2 power levels = 18 runs.
+grid:
+  position_x: [-100, 0, 100]
+  position_y: [-100, 0, 100]
+  position_z: [6]
+  power_dbm: [40, 50]
+
+seeds: [42]

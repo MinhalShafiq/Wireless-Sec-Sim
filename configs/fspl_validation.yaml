@@ -1,0 +1,37 @@
+name: fspl_validation
+scene: floor_wall
+
+band:
+  name: validation
+  carrier_hz: 3.5e9
+  bandwidth_hz: 100e6
+  noise_figure_db: 7.0
+
+# Single TX high above ground; receivers at increasing distance, all
+# co-elevated to keep the line-of-sight clear of the wall and the floor.
+transmitters:
+  - name: tx0
+    position: { x: 0.0, y: 0.0, z: 30.0 }
+    power_dbm: 20.0
+    role: legitimate
+
+receivers:
+  - name: rx_50
+    position: { x: 50.0, y: 0.0, z: 30.0 }
+    role: user
+  - name: rx_100
+    position: { x: 100.0, y: 0.0, z: 30.0 }
+    role: user
+  - name: rx_200
+    position: { x: 200.0, y: 0.0, z: 30.0 }
+    role: user
+
+propagation:
+  max_depth: 0          # LOS only — direct comparison with Friis
+  samples_per_src_paths: 500000
+  los: true
+  specular_reflection: false
+  diffuse_reflection: false
+  refraction: false
+  diffraction: false
+  seed: 42

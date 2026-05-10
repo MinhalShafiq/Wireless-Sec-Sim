@@ -1,0 +1,13 @@
+name: jammer_position
+base: configs/munich_baseline.yaml
+template: jammer
+
+# 25-point grid of jammer positions across central Munich, fixed power.
+# 25 × 1 seed = 25 runs.
+grid:
+  position_x: [-200, -100, 0, 100, 200]
+  position_y: [-200, -100, 0, 100, 200]
+  position_z: [8]
+  power_dbm: [50]
+
+seeds: [42]

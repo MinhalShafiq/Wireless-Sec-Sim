@@ -1,0 +1,15 @@
+name: legit_bs_position
+base: configs/munich_baseline.yaml
+template: legit_tx
+
+# Vary bs0's location across central Munich and its power across two
+# levels — produces diverse benign deployments (no adversaries) for ML
+# training. 5 × 5 × 1 × 2 = 50 runs.
+grid:
+  target_idx: [0]                  # which base TX to mutate (bs0)
+  position_x: [-200, -100, 0, 100, 200]
+  position_y: [-200, -100, 0, 100, 200]
+  position_z: [25]
+  power_dbm: [40, 46]
+
+seeds: [42]

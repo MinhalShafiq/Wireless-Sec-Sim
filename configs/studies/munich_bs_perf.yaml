@@ -1,0 +1,26 @@
+name: munich_bs_perf
+base: configs/munich_baseline.yaml
+
+# Search bs0's position over a wide central area and its power across the
+# typical macro-cell range. bs1/bs2 stay fixed.
+search_space:
+  bs0:
+    position_x: { low: -300, high: 300 }
+    position_y: { low: -300, high: 300 }
+    position_z: { low: 15, high: 35 }
+    power_dbm:  { low: 35, high: 46 }
+
+threat:
+  type: none
+
+objective:
+  direction: maximize
+  terms:
+    - { name: median_user_sinr_db, weight: 1.0 }
+
+n_trials: 25
+optimizer: tpe
+seed: 42
+
+warm_start:
+  enabled: false
